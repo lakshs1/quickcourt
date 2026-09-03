@@ -1,11 +1,22 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 
-/* ---- Lazy page imports for Phase 1 ---- */
+/* ---- Phase 1 Lazy Imports ---- */
 const LandingPage     = lazy(() => import('../features/landing/LandingPage'));
 const SignInPage      = lazy(() => import('../features/auth/SignInPage'));
 const OnboardingPage  = lazy(() => import('../features/onboarding/OnboardingPage'));
 const ConnectFeedPage = lazy(() => import('../features/connect/ConnectFeedPage'));
+
+/* ---- Phase 2 Lazy Imports ---- */
+const SearchResultsPage = lazy(() => import('../features/search/SearchResultsPage'));
+const FiltersPage       = lazy(() => import('../features/filters/FiltersPage'));
+const ProfileDetailPage = lazy(() => import('../features/profile/ProfileDetailPage'));
+const MessagesPage      = lazy(() => import('../features/messages/MessagesPage'));
+
+/* ---- Phase 3 Lazy Imports ---- */
+const BookmarksPage = lazy(() => import('../features/bookmarks/BookmarksPage'));
+const TimetablePage = lazy(() => import('../features/timetable/TimetablePage'));
+const MyProfilePage = lazy(() => import('../features/profile/MyProfilePage'));
 
 /* ---- Fallback Spinner ---- */
 const PageLoader = () => (
@@ -30,6 +41,8 @@ const router = createBrowserRouter([
     path: '/onboarding',
     element: <Suspense fallback={<PageLoader />}><OnboardingPage /></Suspense>,
   },
+
+  /* =========== CORE APP (PHASE 1, 2, 3) =========== */
   {
     path: '/connect',
     element: <Suspense fallback={<PageLoader />}><ConnectFeedPage /></Suspense>,
@@ -38,23 +51,33 @@ const router = createBrowserRouter([
     path: '/feed',
     element: <Navigate to="/connect" replace />,
   },
-
-  /* =========== PLACEHOLDERS FOR PHASE 2 & 3 =========== */
   {
-    path: '/messages',
-    element: <Suspense fallback={<PageLoader />}><ConnectFeedPage /></Suspense>,
+    path: '/search',
+    element: <Suspense fallback={<PageLoader />}><SearchResultsPage /></Suspense>,
   },
   {
-    path: '/bookmarks',
-    element: <Suspense fallback={<PageLoader />}><ConnectFeedPage /></Suspense>,
-  },
-  {
-    path: '/timetable',
-    element: <Suspense fallback={<PageLoader />}><ConnectFeedPage /></Suspense>,
+    path: '/filters',
+    element: <Suspense fallback={<PageLoader />}><FiltersPage /></Suspense>,
   },
   {
     path: '/profile/:id',
-    element: <Suspense fallback={<PageLoader />}><ConnectFeedPage /></Suspense>,
+    element: <Suspense fallback={<PageLoader />}><ProfileDetailPage /></Suspense>,
+  },
+  {
+    path: '/messages',
+    element: <Suspense fallback={<PageLoader />}><MessagesPage /></Suspense>,
+  },
+  {
+    path: '/bookmarks',
+    element: <Suspense fallback={<PageLoader />}><BookmarksPage /></Suspense>,
+  },
+  {
+    path: '/timetable',
+    element: <Suspense fallback={<PageLoader />}><TimetablePage /></Suspense>,
+  },
+  {
+    path: '/profile/me',
+    element: <Suspense fallback={<PageLoader />}><MyProfilePage /></Suspense>,
   },
 
   /* =========== 404 =========== */

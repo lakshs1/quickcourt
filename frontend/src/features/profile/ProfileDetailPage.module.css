@@ -1,0 +1,239 @@
+.pageContainer {
+  min-height: 100vh;
+  background-color: #F8FAFC;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.05);
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.backBtn {
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+.moreBtn {
+  font-size: 20px;
+  color: var(--color-text-subtle);
+  padding: 2px 8px;
+}
+
+.content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.heroBlock {
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.avatarImg {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-surface-2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.nameGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.name {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-text);
+  letter-spacing: -0.4px;
+}
+
+.degreeMeta {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text-subtle);
+}
+
+.tagline {
+  font-size: 14px;
+  font-style: italic;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.heroActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.connectBtn {
+  flex: 1;
+  padding: 12px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(4, 120, 87, 0.2);
+}
+
+.connectBtn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.pendingBtn {
+  background-color: var(--color-surface-2);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  box-shadow: none;
+}
+
+.bookmarkBtn {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+}
+
+.bookmarked {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.sectionBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skillChip {
+  font-size: 12px;
+  font-weight: 600;
+  color: #047857;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 4px 12px;
+  border-radius: var(--radius-xs);
+}
+
+.interestChip {
+  font-size: 12px;
+  font-weight: 600;
+  color: #047857;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 4px 12px;
+  border-radius: var(--radius-xs);
+}
+
+.moreChip {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-subtle);
+  background-color: var(--color-surface-2);
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+}
+
+.lookingForBadge {
+  display: inline-block;
+  width: fit-content;
+  font-size: 13px;
+  font-weight: 600;
+  color: #047857;
+  background-color: #ecfdf5;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+}
+
+.commonGroundBox {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  background-color: #ffffff;
+  border: 1px dashed var(--color-border-strong);
+  padding: 12px;
+  border-radius: var(--radius-md);
+}
+
+.cgPill {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  padding: 4px 10px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--color-border);
+}
+
+.aboutText {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  padding: 14px;
+  border-radius: var(--radius-md);
+}
