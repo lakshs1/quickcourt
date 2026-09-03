@@ -1,71 +1,56 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import api from '../../lib/axios';
 import { BottomNav } from '../../components/layout/BottomNav';
 import styles from './MessagesPage.module.css';
 
-interface RequestItem {
-  id: string;
-  name: string;
-  avatar: string;
-  degree: string;
-  year: string;
-}
-
-const INITIAL_RECEIVED: RequestItem[] = [
-  {
-    id: 'karan-singh',
-    name: 'Karan Singh',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80',
-    degree: 'BTech (IT)',
-    year: '2nd Year'
-  },
-  {
-    id: 'neha-yadav',
-    name: 'Neha Yadav',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-    degree: 'BTech (CSE)',
-    year: '3rd Year'
-  }
-];
-
-const INITIAL_SENT: RequestItem[] = [
-  {
-    id: 'vivek-mishra',
-    name: 'Vivek Mishra',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
-    degree: 'BCA',
-    year: '2nd Year'
-  },
-  {
-    id: 'isha-patel',
-    name: 'Isha Patel',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
-    degree: 'BCom',
-    year: '3rd Year'
-  }
-];
-
 export default function MessagesPage() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'requests' | 'connections' | 'bookmarks'>('requests');
+  const [activeTab, setActiveTab] = useState<'requests' | 'connections'>('requests');
 
-  const [received, setReceived] = useState<RequestItem[]>(INITIAL_RECEIVED);
-  const [acceptedCount, setAcceptedCount] = useState(6);
+  const [pendingReceived, setPendingReceived] = useState<any[]>([]);
+  const [pendingSent, setPendingSent] = useState<any[]>([]);
+  const [acceptedConnections, setAcceptedConnections] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleAccept = (id: string) => {
-    setReceived(received.filter((r) => r.id !== id));
-    setAcceptedCount((prev) => prev + 1);
+  const fetchConnections = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.get('/connections');
+      if (res.data.success) {
+        setPendingReceived(res.data.data.pendingReceived || []);
+        setPendingSent(res.data.data.pendingSent || []);
+        setAcceptedConnections(res.data.data.accepted || []);
+      }
+    } catch (err: any) {
+      console.error('Failed to load connections:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDecline = (id: string) => {
-    setReceived(received.filter((r) => r.id !== id));
+  useEffect(() => {
+    fetchConnections();
+  }, []);
+
+  const handleUpdateStatus = async (connectionId: number, status: 'accepted' | 'rejected') => {
+    try {
+      const res = await api.patch(`/connections/${connectionId}`, { status });
+      if (res.data.success) {
+        toast.success(`Connection ${status}!`);
+        fetchConnections();
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || `Failed to update status`);
+    }
   };
 
   return (
     <div className={styles.pageContainer}>
       {/* Header */}
       <header className={styles.header}>
-        <h1 className={styles.title}>Messages</h1>
+        <h1 className={styles.title}>Messages & Connections</h1>
       </header>
 
       {/* Tab Switcher */}
@@ -74,47 +59,70 @@ export default function MessagesPage() {
           className={`${styles.tabBtn} ${activeTab === 'requests' ? styles.activeTab : ''}`}
           onClick={() => setActiveTab('requests')}
         >
-          Requests <span className={styles.countBadge}>{received.length}</span>
+          Requests <span className={styles.countBadge}>{pendingReceived.length}</span>
         </button>
 
         <button
           className={`${styles.tabBtn} ${activeTab === 'connections' ? styles.activeTab : ''}`}
           onClick={() => setActiveTab('connections')}
         >
-          Connections <span className={styles.countBadge}>{acceptedCount}</span>
+          My Network <span className={styles.countBadge}>{acceptedConnections.length}</span>
         </button>
 
         <button
-          className={`${styles.tabBtn} ${activeTab === 'bookmarks' ? styles.activeTab : ''}`}
+          className={styles.tabBtn}
           onClick={() => navigate('/bookmarks')}
         >
-          Bookmarks <span className={styles.countBadge}>5</span>
+          Bookmarks
         </button>
       </nav>
 
       {/* Main Content */}
       <main className={styles.content}>
-        {activeTab === 'requests' && (
+        {isLoading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748B' }}>
+            Loading connections...
+          </div>
+        ) : activeTab === 'requests' ? (
           <div className={styles.sectionStack}>
             {/* Received Requests */}
             <section className={styles.section}>
               <h2 className={styles.sectionHeader}>Received Requests</h2>
-              {received.length === 0 ? (
-                <div className={styles.emptyCard}>No pending requests</div>
+              {pendingReceived.length === 0 ? (
+                <div className={styles.emptyCard}>No pending incoming requests</div>
               ) : (
                 <div className={styles.list}>
-                  {received.map((item) => (
-                    <div key={item.id} className={styles.requestCard}>
-                      <img src={item.avatar} alt={item.name} className={styles.avatar} />
+                  {pendingReceived.map((item) => (
+                    <div key={item.connectionId} className={styles.requestCard} onClick={() => navigate(`/profile/${item.profile.id}`)}>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: '#047857',
+                        color: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 700,
+                        fontSize: '16px'
+                      }}>
+                        {item.profile.name?.[0] || 'S'}
+                      </div>
                       <div className={styles.info}>
-                        <h3 className={styles.name}>{item.name}</h3>
-                        <p className={styles.meta}>{item.degree}, {item.year}</p>
+                        <h3 className={styles.name}>{item.profile.name}</h3>
+                        <p className={styles.meta}>{item.profile.degree}, {item.profile.year}</p>
                       </div>
                       <div className={styles.actions}>
-                        <button className={styles.acceptBtn} onClick={() => handleAccept(item.id)}>
+                        <button
+                          className={styles.acceptBtn}
+                          onClick={(e) => { e.stopPropagation(); handleUpdateStatus(item.connectionId, 'accepted'); }}
+                        >
                           Accept
                         </button>
-                        <button className={styles.declineBtn} onClick={() => handleDecline(item.id)}>
+                        <button
+                          className={styles.declineBtn}
+                          onClick={(e) => { e.stopPropagation(); handleUpdateStatus(item.connectionId, 'rejected'); }}
+                        >
                           Decline
                         </button>
                       </div>
@@ -127,25 +135,71 @@ export default function MessagesPage() {
             {/* Sent Requests */}
             <section className={styles.section}>
               <h2 className={styles.sectionHeader}>Sent Requests</h2>
-              <div className={styles.list}>
-                {INITIAL_SENT.map((item) => (
-                  <div key={item.id} className={styles.requestCard}>
-                    <img src={item.avatar} alt={item.name} className={styles.avatar} />
-                    <div className={styles.info}>
-                      <h3 className={styles.name}>{item.name}</h3>
-                      <p className={styles.meta}>{item.degree}, {item.year}</p>
+              {pendingSent.length === 0 ? (
+                <div className={styles.emptyCard}>No sent requests</div>
+              ) : (
+                <div className={styles.list}>
+                  {pendingSent.map((item) => (
+                    <div key={item.connectionId} className={styles.requestCard} onClick={() => navigate(`/profile/${item.profile.id}`)}>
+                      <div style={{
+                        width: '40px',
+                        height: '40px',
+                        borderRadius: '50%',
+                        background: '#047857',
+                        color: '#fff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontWeight: 700,
+                        fontSize: '16px'
+                      }}>
+                        {item.profile.name?.[0] || 'S'}
+                      </div>
+                      <div className={styles.info}>
+                        <h3 className={styles.name}>{item.profile.name}</h3>
+                        <p className={styles.meta}>{item.profile.degree}, {item.profile.year}</p>
+                      </div>
+                      <span className={styles.pendingBadge}>Pending</span>
                     </div>
-                    <span className={styles.pendingBadge}>Pending</span>
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        ) : (
+          <div className={styles.section}>
+            <h2 className={styles.sectionHeader}>Connected Students ({acceptedConnections.length})</h2>
+            {acceptedConnections.length === 0 ? (
+              <div className={styles.emptyCard}>No connected students yet.</div>
+            ) : (
+              <div className={styles.list}>
+                {acceptedConnections.map((item) => (
+                  <div key={item.connectionId} className={styles.requestCard} onClick={() => navigate(`/profile/${item.profile.id}`)}>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      background: '#047857',
+                      color: '#fff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 700,
+                      fontSize: '16px'
+                    }}>
+                      {item.profile.name?.[0] || 'S'}
+                    </div>
+                    <div className={styles.info}>
+                      <h3 className={styles.name}>{item.profile.name}</h3>
+                      <p className={styles.meta}>{item.profile.degree}, {item.profile.year}</p>
+                    </div>
+                    <span style={{ fontSize: '12px', background: '#DCFCE7', color: '#166534', padding: '4px 10px', borderRadius: '12px', fontWeight: 600 }}>
+                      Connected ✓
+                    </span>
                   </div>
                 ))}
               </div>
-            </section>
-          </div>
-        )}
-
-        {activeTab === 'connections' && (
-          <div className={styles.connectionsList}>
-            <p className={styles.infoNote}>Connected students will appear here.</p>
+            )}
           </div>
         )}
       </main>

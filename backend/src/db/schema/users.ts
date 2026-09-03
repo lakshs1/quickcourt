@@ -5,6 +5,7 @@ import {
   boolean,
   timestamp,
   pgEnum,
+  text,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -19,6 +20,15 @@ export const users = pgTable("users", {
   password: varchar("password", { length: 255 }).notNull(),
   name: varchar("name", { length: 255 }).notNull(),
   role: roleEnum("role").notNull().default("user"),
+  degree: varchar("degree", { length: 100 }),
+  year: varchar("year", { length: 50 }),
+  bio: text("bio"),
+  about: text("about"),
+  photoUrl: text("photo_url"),
+  location: text("location"),
+  availability: varchar("availability", { length: 100 }),
+  lookingFor: text("looking_for"),
+  hasOnboarded: boolean("has_onboarded").notNull().default(false),
   emailVerified: boolean("email_verified").notNull().default(false),
   verificationToken: varchar("verification_token", { length: 255 }),
   resetToken: varchar("reset_token", { length: 255 }),

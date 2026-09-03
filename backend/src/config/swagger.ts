@@ -26,18 +26,22 @@ export function setupSwagger(app: Express): void {
   const doc = generator.generateDocument({
     openapi: "3.0.0",
     info: {
-      title: "Hackathon API",
+      title: "AmiConnect API v1",
       version: "1.0.0",
       description:
-        "Auto-generated API documentation from Zod schemas. Built for speed.",
+        "Comprehensive REST API for AmiConnect — Amity University student networking platform. Built with Express, Drizzle ORM & Zod.",
     },
-    servers: [{ url: "/api" }],
+    servers: [{ url: "/api/v1" }, { url: "/api" }],
   });
 
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(doc, {
-    customCss: ".swagger-ui .topbar { display: none }",
-    customSiteTitle: "Hackathon API Docs",
-  }));
+  app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(doc, {
+      customCss: ".swagger-ui .topbar { display: none }",
+      customSiteTitle: "AmiConnect API Docs",
+    })
+  );
 
-  console.log("📄 Swagger UI available at /api-docs");
+  console.log("📄 AmiConnect Swagger UI available at /api-docs");
 }

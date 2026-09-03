@@ -1,49 +1,69 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import api from '../../lib/axios';
 import { BottomNav } from '../../components/layout/BottomNav';
-import { MOCK_PROFILES } from '../../data/mockProfiles';
-import type { Profile } from '../../types/amiConnect';
 import styles from './SearchResultsPage.module.css';
 
 export default function SearchResultsPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const initialQuery = searchParams.get('q') || 'python fastapi';
+  const initialQuery = searchParams.get('q') || '';
 
   const [query, setQuery] = useState(initialQuery);
-  const [profiles, setProfiles] = useState<Profile[]>(MOCK_PROFILES);
+  const [profiles, setProfiles] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const filteredProfiles = profiles.filter((p) => {
-    if (!query.trim()) return true;
-    const q = query.toLowerCase();
-    return (
-      p.name.toLowerCase().includes(q) ||
-      p.degree.toLowerCase().includes(q) ||
-      p.lookingFor.toLowerCase().includes(q) ||
-      p.skills.some((s) => s.toLowerCase().includes(q)) ||
-      p.interests.some((i) => i.toLowerCase().includes(q))
-    );
-  });
-
-  const handleConnect = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setProfiles((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? {
-              ...p,
-              connectionStatus: p.connectionStatus === 'pending' ? 'none' : 'pending'
-            }
-          : p
-      )
-    );
+  const fetchSearchResults = async (searchQuery: string) => {
+    setIsLoading(true);
+    try {
+      const res = await api.get(`/feed/search?q=${encodeURIComponent(searchQuery)}`);
+      if (res.data.success) {
+        setProfiles(res.data.data.profiles || []);
+      }
+    } catch (err: any) {
+      console.error('Failed to search profiles:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleToggleBookmark = (id: string, e: React.MouseEvent) => {
+  useEffect(() => {
+    fetchSearchResults(query);
+  }, [query]);
+
+  const handleConnect = async (receiverId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setProfiles((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, isBookmarked: !p.isBookmarked } : p))
-    );
+    try {
+      const res = await api.post('/connections', { receiverId });
+      if (res.data.success) {
+        toast.success('Connection request sent!');
+        setProfiles((prev) =>
+          prev.map((p) => (p.id === receiverId ? { ...p, connectionStatus: 'pending' } : p))
+        );
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Could not send request');
+    }
+  };
+
+  const handleToggleBookmark = async (targetUserId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const isCurrentlyBookmarked = profiles.find((p) => p.id === targetUserId)?.isBookmarked;
+    try {
+      if (isCurrentlyBookmarked) {
+        await api.delete(`/bookmarks/${targetUserId}`);
+        toast.success('Bookmark removed');
+      } else {
+        await api.post('/bookmarks', { bookmarkedUserId: targetUserId });
+        toast.success('Profile bookmarked!');
+      }
+      setProfiles((prev) =>
+        prev.map((p) => (p.id === targetUserId ? { ...p, isBookmarked: !isCurrentlyBookmarked } : p))
+      );
+    } catch (err: any) {
+      toast.error('Bookmark update failed');
+    }
   };
 
   return (
@@ -86,43 +106,62 @@ export default function SearchResultsPage() {
       {/* Results Header */}
       <div className={styles.metaRow}>
         <span className={styles.resultsCount}>
-          {filteredProfiles.length} {filteredProfiles.length === 1 ? 'result' : 'results'} found
+          {profiles.length} {profiles.length === 1 ? 'result' : 'results'} found
         </span>
       </div>
 
       {/* Results List */}
       <main className={styles.resultsList}>
-        {filteredProfiles.length === 0 ? (
+        {isLoading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748B' }}>
+            Searching student profiles...
+          </div>
+        ) : profiles.length === 0 ? (
           <div className={styles.emptyState}>
             <div className={styles.emptyIcon}>🔍</div>
             <h3>No matching results</h3>
-            <p>Try searching for skills like "Python", "React", or "UI/UX".</p>
+            <p>Try searching for skills like "Python", "React", or "FastAPI".</p>
           </div>
         ) : (
-          filteredProfiles.map((profile) => (
+          profiles.map((profile) => (
             <article
               key={profile.id}
               className={styles.compactCard}
               onClick={() => navigate(`/profile/${profile.id}`)}
             >
               <div className={styles.cardHeader}>
-                <img src={profile.avatar} alt={profile.name} className={styles.avatar} />
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: '#047857',
+                  color: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: '14px'
+                }}>
+                  {profile.name?.[0] || 'S'}
+                </div>
                 <div className={styles.info}>
                   <h3 className={styles.name}>{profile.name}</h3>
                   <p className={styles.subtext}>
-                    {profile.degree}, {profile.year} • {profile.university}
+                    {profile.degree || 'Student'}, {profile.year || 'Amity'}
                   </p>
                 </div>
               </div>
 
               {/* Skill Badges */}
-              <div className={styles.skillsRow}>
-                {profile.skills.slice(0, 4).map((skill) => (
-                  <span key={skill} className={styles.skillTag}>
-                    {skill}
-                  </span>
-                ))}
-              </div>
+              {profile.skills && profile.skills.length > 0 && (
+                <div className={styles.skillsRow}>
+                  {profile.skills.slice(0, 4).map((skill: any) => (
+                    <span key={skill.id || skill.name || skill} className={styles.skillTag}>
+                      {skill.name || skill}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               {/* Looking For */}
               {profile.lookingFor && (
@@ -139,6 +178,7 @@ export default function SearchResultsPage() {
                     profile.connectionStatus === 'pending' ? styles.pendingBtn : ''
                   }`}
                   onClick={(e) => handleConnect(profile.id, e)}
+                  disabled={profile.connectionStatus === 'pending' || profile.connectionStatus === 'accepted'}
                 >
                   {profile.connectionStatus === 'pending' ? 'Pending' : 'Connect'}
                 </button>

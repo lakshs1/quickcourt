@@ -1,25 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import api from '../../lib/axios';
+import { useAuthStore } from '../../stores/authStore';
 import { BottomNav } from '../../components/layout/BottomNav';
 import styles from './OnboardingPage.module.css';
 
-const DEGREES = ['BCA', 'BTech (CSE)', 'BTech (IT)', 'BTech (ECE)', 'BBA', 'MBA', 'MCA', 'B.Des', 'Other'];
-const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year', 'Alumni'];
+const DEGREES = ['BCA', 'BTech (CSE)', 'BTech (IT)', 'BTech (ECE)', 'BTech (ME)', 'BBA', 'MBA', 'MCA', 'B.Des', 'MSc', 'MA', 'Other'];
+const YEARS = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year', 'Alumni'];
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
+  const { user, setUser } = useAuthStore();
 
-  const [fullName, setFullName] = useState('Mawiya Manzar');
+  const [fullName, setFullName] = useState(user?.name || '');
   const [degree, setDegree] = useState('BCA');
-  const [year, setYear] = useState('3rd Year');
+  const [year, setYear] = useState('2nd Year');
+  const [bio, setBio] = useState('');
+  const [lookingFor, setLookingFor] = useState('');
 
-  const [skills, setSkills] = useState(['Python', 'FastAPI', 'SQL']);
+  const [skills, setSkills] = useState<string[]>(['Python', 'FastAPI', 'PostgreSQL']);
   const [newSkill, setNewSkill] = useState('');
   const [showSkillInput, setShowSkillInput] = useState(false);
 
-  const [interests, setInterests] = useState(['Football', 'Music', 'Photography', 'Gaming', 'Reading']);
+  const [interests, setInterests] = useState<string[]>(['Cricket', 'Photography', 'Gaming']);
   const [newInterest, setNewInterest] = useState('');
   const [showInterestInput, setShowInterestInput] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (user?.name) setFullName(user.name);
+  }, [user]);
 
   const handleAddSkill = () => {
     if (newSkill.trim() && !skills.includes(newSkill.trim())) {
@@ -45,10 +56,43 @@ export default function OnboardingPage() {
     setInterests(interests.filter((i) => i !== interestToRemove));
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Navigate to connect feed
-    navigate('/connect');
+
+    if (!lookingFor.trim()) {
+      toast.error('Please specify what kind of collaborator you are looking for.');
+      return;
+    }
+
+    if (skills.length === 0) {
+      toast.error('Please add at least 1 skill tag.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const res = await api.post('/users/onboard', {
+        degree,
+        year,
+        bio: bio.trim() || undefined,
+        lookingFor: lookingFor.trim(),
+        skills,
+        interests,
+      });
+
+      if (res.data.success) {
+        toast.success('Profile onboarded successfully!');
+        if (user) {
+          setUser({ ...user, ...res.data.data });
+        }
+        navigate('/connect');
+      }
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Onboarding failed';
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -72,22 +116,10 @@ export default function OnboardingPage() {
       <main className={styles.content}>
         <div className={styles.titleGroup}>
           <h1 className={styles.title}>Complete your profile</h1>
-          <p className={styles.subtitle}>This helps students find you.</p>
+          <p className={styles.subtitle}>This helps students at Amity find and connect with you.</p>
         </div>
 
         <form onSubmit={handleSave} className={styles.form}>
-          {/* Avatar Upload */}
-          <div className={styles.avatarSection}>
-            <div className={styles.avatarCircle}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                <circle cx="12" cy="13" r="4" />
-              </svg>
-              <div className={styles.cameraPlus}>+</div>
-            </div>
-            <span className={styles.avatarLabel}>Add Photo</span>
-          </div>
-
           {/* Full Name */}
           <div className={styles.fieldGroup}>
             <label className={styles.label}>Full Name</label>
@@ -126,6 +158,31 @@ export default function OnboardingPage() {
                 <option key={y} value={y}>{y}</option>
               ))}
             </select>
+          </div>
+
+          {/* Looking For */}
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>What are you looking for?</label>
+            <textarea
+              className={styles.input}
+              style={{ minHeight: '60px', resize: 'vertical' }}
+              placeholder="e.g. Backend dev for an AI legal assistant project"
+              value={lookingFor}
+              onChange={(e) => setLookingFor(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Bio / Tagline */}
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>Short Bio / Tagline</label>
+            <input
+              type="text"
+              className={styles.input}
+              placeholder="e.g. Building AI solutions that solve real world problems."
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+            />
           </div>
 
           {/* Skills (Select or add) */}
@@ -220,8 +277,8 @@ export default function OnboardingPage() {
 
           {/* Save Button */}
           <div className={styles.submitWrapper}>
-            <button type="submit" className={styles.submitBtn}>
-              Save & Continue
+            <button type="submit" disabled={isLoading} className={styles.submitBtn}>
+              {isLoading ? 'Saving...' : 'Save & Start Connecting'}
             </button>
             <span className={styles.editNote}>You can edit everything later</span>
           </div>

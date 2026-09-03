@@ -1,40 +1,26 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../lib/axios';
 import styles from './LandingPage.module.css';
-
-const PREVIEW_PROFILES = [
-  {
-    id: 'rohan-verma',
-    name: 'Rohan Verma',
-    degree: 'BCA, 2nd Year',
-    university: 'Amity University',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80',
-    skills: ['Python', 'FastAPI', 'AI/ML'],
-    lookingFor: 'Project Collaborator'
-  },
-  {
-    id: 'sneha-sharma',
-    name: 'Sneha Sharma',
-    degree: 'BTech (CSE), 3rd Year',
-    university: 'Amity University',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80',
-    skills: ['React', 'Node.js', 'MongoDB'],
-    lookingFor: 'Frontend Developer'
-  },
-  {
-    id: 'aman-gupta',
-    name: 'Aman Gupta',
-    degree: 'BCA, 1st Year',
-    university: 'Amity University',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80',
-    skills: ['Python', 'Django', 'Linux'],
-    lookingFor: 'Backend Developer'
-  }
-];
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const [activeSlide, setActiveSlide] = useState(0);
+  const [previewProfiles, setPreviewProfiles] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchPreview() {
+      try {
+        const res = await api.get('/preview/profiles');
+        if (res.data.success && res.data.data?.length > 0) {
+          setPreviewProfiles(res.data.data);
+        }
+      } catch (err) {
+        console.error('Failed to load preview profiles:', err);
+      }
+    }
+    fetchPreview();
+  }, []);
 
   return (
     <div className={styles.pageContainer}>
@@ -81,7 +67,7 @@ export default function LandingPage() {
               </svg>
               <span>Sign in to unlock</span>
             </button>
-            <span className={styles.ctaNote}>Only for Amity University students</span>
+            <span className={styles.ctaNote}>Only for Amity University students (@s.amity.edu)</span>
           </div>
         </section>
 
@@ -103,31 +89,40 @@ export default function LandingPage() {
 
           {/* Locked Profile Card Slide */}
           <div className={styles.slideContainer}>
-            {PREVIEW_PROFILES.map((profile, idx) => (
+            {previewProfiles.map((profile, idx) => (
               <div
                 key={profile.id}
                 className={`${styles.profilePreviewCard} ${idx === activeSlide ? styles.activeSlide : styles.hiddenSlide}`}
               >
                 <div className={styles.cardHeader}>
-                  <img src={profile.avatar} alt={profile.name} className={styles.avatarImg} />
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    background: '#047857',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 700,
+                    fontSize: '16px'
+                  }}>
+                    {profile.name?.[0] || 'S'}
+                  </div>
                   <div className={styles.profileInfo}>
                     <h4 className={styles.profileName}>{profile.name}</h4>
-                    <p className={styles.profileMeta}>{profile.degree}</p>
-                    <p className={styles.universityName}>{profile.university}</p>
-                  </div>
-                  <div className={styles.lockIconOverlay}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                    </svg>
+                    <p className={styles.profileMeta}>{profile.degree}, {profile.year}</p>
+                    <p className={styles.universityName}>Amity University</p>
                   </div>
                 </div>
 
-                <div className={styles.skillsRow}>
-                  {profile.skills.map((skill) => (
-                    <span key={skill} className={styles.skillChip}>{skill}</span>
-                  ))}
-                </div>
+                {profile.skills && profile.skills.length > 0 && (
+                  <div className={styles.skillsRow}>
+                    {profile.skills.map((skill: any) => (
+                      <span key={skill.id || skill.name} className={styles.skillChip}>{skill.name || skill}</span>
+                    ))}
+                  </div>
+                )}
 
                 <div className={styles.lockedOverlayBanner} onClick={() => navigate('/login')}>
                   <span>Sign in with Amity SSO to connect</span>
@@ -137,16 +132,18 @@ export default function LandingPage() {
           </div>
 
           {/* Dots Indicator */}
-          <div className={styles.dotsRow}>
-            {PREVIEW_PROFILES.map((_, i) => (
-              <button
-                key={i}
-                className={`${styles.dot} ${i === activeSlide ? styles.activeDot : ''}`}
-                onClick={() => setActiveSlide(i)}
-                aria-label={`Go to slide ${i + 1}`}
-              />
-            ))}
-          </div>
+          {previewProfiles.length > 1 && (
+            <div className={styles.dotsRow}>
+              {previewProfiles.map((_, i) => (
+                <button
+                  key={i}
+                  className={`${styles.dot} ${i === activeSlide ? styles.activeDot : ''}`}
+                  onClick={() => setActiveSlide(i)}
+                  aria-label={`Go to slide ${i + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </section>
       </main>
     </div>

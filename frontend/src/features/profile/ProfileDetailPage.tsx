@@ -1,29 +1,64 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import api from '../../lib/axios';
 import { BottomNav } from '../../components/layout/BottomNav';
-import { MOCK_PROFILES } from '../../data/mockProfiles';
-import type { Profile } from '../../types/amiConnect';
 import styles from './ProfileDetailPage.module.css';
 
 export default function ProfileDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
-  const targetProfile = MOCK_PROFILES.find((p) => p.id === id) || MOCK_PROFILES[0];
-  const [profile, setProfile] = useState<Profile>(targetProfile);
+  const [profile, setProfile] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleConnect = () => {
-    setProfile((prev) => ({
-      ...prev,
-      connectionStatus: prev.connectionStatus === 'pending' ? 'none' : 'pending'
-    }));
+  useEffect(() => {
+    async function fetchPublicProfile() {
+      if (!id) return;
+      setIsLoading(true);
+      try {
+        const res = await api.get(`/users/${id}`);
+        if (res.data.success) {
+          setProfile(res.data.data);
+        }
+      } catch (err: any) {
+        console.error('Failed to load profile:', err);
+        toast.error('Student profile not found');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchPublicProfile();
+  }, [id]);
+
+  const handleConnect = async () => {
+    if (!id) return;
+    try {
+      const res = await api.post('/connections', { receiverId: id });
+      if (res.data.success) {
+        toast.success('Connection request sent!');
+        setProfile((prev: any) => ({ ...prev, connectionStatus: 'pending' }));
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Could not send request');
+    }
   };
 
-  const handleBookmark = () => {
-    setProfile((prev) => ({
-      ...prev,
-      isBookmarked: !prev.isBookmarked
-    }));
+  const handleBookmark = async () => {
+    if (!id) return;
+    const isCurrentlyBookmarked = profile?.isBookmarked;
+    try {
+      if (isCurrentlyBookmarked) {
+        await api.delete(`/bookmarks/${id}`);
+        toast.success('Bookmark removed');
+      } else {
+        await api.post('/bookmarks', { bookmarkedUserId: id });
+        toast.success('Profile bookmarked!');
+      }
+      setProfile((prev: any) => ({ ...prev, isBookmarked: !isCurrentlyBookmarked }));
+    } catch (err: any) {
+      toast.error('Bookmark update failed');
+    }
   };
 
   return (
@@ -44,122 +79,137 @@ export default function ProfileDetailPage() {
 
       {/* Main Content */}
       <main className={styles.content}>
-        {/* Profile Hero Block */}
-        <section className={styles.heroBlock}>
-          <img src={profile.avatar} alt={profile.name} className={styles.avatarImg} />
-          
-          <div className={styles.nameGroup}>
-            <h1 className={styles.name}>{profile.name}</h1>
-            <p className={styles.degreeMeta}>
-              {profile.degree}, {profile.year} • {profile.university}
-            </p>
+        {isLoading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748B' }}>
+            Loading student profile...
           </div>
-
-          <div className={styles.metaRow}>
-            <span>📍 {profile.location}</span>
-            <span>•</span>
-            <span>📅 Available: {profile.availability}</span>
+        ) : !profile ? (
+          <div style={{ textAlign: 'center', padding: '40px 16px', color: '#64748B' }}>
+            Student profile not found.
           </div>
+        ) : (
+          <>
+            {/* Profile Hero Block */}
+            <section className={styles.heroBlock}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: '#047857',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 700,
+                fontSize: '24px',
+                margin: '0 auto 12px'
+              }}>
+                {profile.name?.[0] || 'S'}
+              </div>
+              
+              <div className={styles.nameGroup}>
+                <h1 className={styles.name}>{profile.name}</h1>
+                <p className={styles.degreeMeta}>
+                  {profile.degree || 'Student'}, {profile.year || 'Amity'} • Amity University
+                </p>
+              </div>
 
-          {profile.about && (
-            <p className={styles.tagline}>
-              "{profile.about}"
-            </p>
-          )}
+              <div className={styles.metaRow}>
+                <span>📍 {profile.location || 'Noida, India'}</span>
+                <span>•</span>
+                <span>📅 Available: {profile.availability || 'Evenings'}</span>
+              </div>
 
-          {/* Action Buttons */}
-          <div className={styles.heroActions}>
-            <button
-              className={`${styles.connectBtn} ${
-                profile.connectionStatus === 'pending' ? styles.pendingBtn : ''
-              }`}
-              onClick={handleConnect}
-            >
-              {profile.connectionStatus === 'pending' ? 'Request Sent' : 'Connect'}
-            </button>
+              {profile.bio && (
+                <p className={styles.tagline}>
+                  "{profile.bio}"
+                </p>
+              )}
 
-            <button
-              className={`${styles.bookmarkBtn} ${profile.isBookmarked ? styles.bookmarked : ''}`}
-              onClick={handleBookmark}
-              aria-label="Bookmark"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill={profile.isBookmarked ? 'currentColor' : 'none'}
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-              </svg>
-            </button>
-          </div>
-        </section>
+              {/* Action Buttons */}
+              <div className={styles.heroActions}>
+                <button
+                  className={`${styles.connectBtn} ${
+                    profile.connectionStatus === 'pending' ? styles.pendingBtn : ''
+                  }`}
+                  onClick={handleConnect}
+                  disabled={profile.connectionStatus === 'pending' || profile.connectionStatus === 'accepted'}
+                >
+                  {profile.connectionStatus === 'pending'
+                    ? 'Pending'
+                    : profile.connectionStatus === 'accepted'
+                    ? 'Connected ✓'
+                    : 'Connect'}
+                </button>
 
-        {/* Skills Section */}
-        <section className={styles.sectionBlock}>
-          <h2 className={styles.sectionTitle}>Skills</h2>
-          <div className={styles.chipRow}>
-            {profile.skills.map((skill) => (
-              <span key={skill} className={styles.skillChip}>
-                {skill}
-              </span>
-            ))}
-          </div>
-        </section>
+                <button
+                  className={`${styles.bookmarkBtn} ${profile.isBookmarked ? styles.bookmarked : ''}`}
+                  onClick={handleBookmark}
+                  aria-label="Bookmark"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill={profile.isBookmarked ? 'currentColor' : 'none'}
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                  </svg>
+                </button>
+              </div>
+            </section>
 
-        {/* Looking For Section */}
-        {profile.lookingFor && (
-          <section className={styles.sectionBlock}>
-            <h2 className={styles.sectionTitle}>Looking For</h2>
-            <div className={styles.lookingForBadge}>
-              {profile.lookingFor}
-            </div>
-          </section>
+            {/* Skills Section */}
+            {profile.skills && profile.skills.length > 0 && (
+              <section className={styles.sectionBlock}>
+                <h2 className={styles.sectionTitle}>Skills</h2>
+                <div className={styles.chipRow}>
+                  {profile.skills.map((skill: any) => (
+                    <span key={skill.id || skill.name || skill} className={styles.skillChip}>
+                      {skill.name || skill}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Looking For Section */}
+            {profile.lookingFor && (
+              <section className={styles.sectionBlock}>
+                <h2 className={styles.sectionTitle}>Looking For</h2>
+                <div className={styles.lookingForBadge}>
+                  {profile.lookingFor}
+                </div>
+              </section>
+            )}
+
+            {/* Interests (Hobbies) Section */}
+            {profile.interests && profile.interests.length > 0 && (
+              <section className={styles.sectionBlock}>
+                <h2 className={styles.sectionTitle}>Interests (Hobbies)</h2>
+                <div className={styles.chipRow}>
+                  {profile.interests.map((interest: any) => (
+                    <span key={interest.id || interest.name || interest} className={styles.interestChip}>
+                      {interest.name || interest}
+                    </span>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* About Me Section */}
+            {profile.about && (
+              <section className={styles.sectionBlock}>
+                <h2 className={styles.sectionTitle}>About Me</h2>
+                <p className={styles.aboutText}>
+                  {profile.about}
+                </p>
+              </section>
+            )}
+          </>
         )}
-
-        {/* Interests (Hobbies) Section */}
-        {profile.interests && (
-          <section className={styles.sectionBlock}>
-            <h2 className={styles.sectionTitle}>Interests (Hobbies)</h2>
-            <div className={styles.chipRow}>
-              {profile.interests.map((interest) => (
-                <span key={interest} className={styles.interestChip}>
-                  {interest}
-                </span>
-              ))}
-              <span className={styles.moreChip}>+3 more</span>
-            </div>
-          </section>
-        )}
-
-        {/* Common Ground Section */}
-        {profile.commonGround && (
-          <section className={styles.sectionBlock}>
-            <h2 className={styles.sectionTitle}>Common Ground</h2>
-            <div className={styles.commonGroundBox}>
-              {profile.commonGround.skills?.map((s) => (
-                <span key={s} className={styles.cgPill}>
-                  📍 {s}
-                </span>
-              ))}
-              {profile.commonGround.interests?.map((i) => (
-                <span key={i} className={styles.cgPill}>
-                  {i === 'Football' ? '⚽' : i === 'Music' ? '🎵' : '✨'} {i}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* About Me Section */}
-        <section className={styles.sectionBlock}>
-          <h2 className={styles.sectionTitle}>About Me</h2>
-          <p className={styles.aboutText}>
-            Passionate about AI and using tech to solve meaningful problems that create real impact.
-          </p>
-        </section>
       </main>
 
       {/* Bottom Nav */}
