@@ -1,0 +1,294 @@
+.pageContainer {
+  min-height: 100vh;
+  background-color: #F8FAFC;
+  display: flex;
+  flex-direction: column;
+  max-width: 480px;
+  margin: 0 auto;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.05);
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logoBadge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brandName {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.3px;
+}
+
+.menuBtn {
+  color: var(--color-text-muted);
+  padding: 4px;
+}
+
+.mainContent {
+  flex: 1;
+  padding: 24px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.heroSection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  text-align: left;
+}
+
+.tagline {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  width: fit-content;
+}
+
+.headline {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--color-text);
+  letter-spacing: -0.5px;
+}
+
+.accent {
+  color: var(--color-primary);
+}
+
+.subtext {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.ctaWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.primaryCta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 20px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px rgba(4, 120, 87, 0.25);
+  transition: all var(--transition-fast);
+}
+
+.primaryCta:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.ctaNote {
+  font-size: 12px;
+  color: var(--color-text-subtle);
+  text-align: center;
+}
+
+.previewSection {
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.previewCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.previewTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.previewSub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.lockBadge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background-color: var(--color-surface-2);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.slideContainer {
+  position: relative;
+  min-height: 140px;
+}
+
+.profilePreviewCard {
+  background-color: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hiddenSlide {
+  display: none;
+}
+
+.activeSlide {
+  display: flex;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatarImg {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.profileInfo {
+  flex: 1;
+}
+
+.profileName {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.profileMeta {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.universityName {
+  font-size: 11px;
+  color: var(--color-text-subtle);
+}
+
+.lockIconOverlay {
+  color: var(--color-text-subtle);
+  background-color: var(--color-surface-2);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.skillsRow {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.skillChip {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+}
+
+.lockedOverlayBanner {
+  background-color: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-top: 4px;
+  transition: opacity var(--transition-fast);
+}
+
+.lockedOverlayBanner:hover {
+  opacity: 0.95;
+}
+
+.dotsRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-border-strong);
+  padding: 0;
+  transition: all var(--transition-fast);
+}
+
+.activeDot {
+  background-color: var(--color-primary);
+  width: 20px;
+  border-radius: 10px;
+}

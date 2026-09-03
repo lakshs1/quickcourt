@@ -7,31 +7,31 @@
 
 /* ---- Color Tokens ----------------------------------------- */
 :root {
-  --color-primary:        #714B67;
-  --color-primary-hover:  #5B3A52;
-  --color-primary-light:  rgba(113, 75, 103, 0.10);
-  --color-primary-soft:   rgba(113, 75, 103, 0.06);
+  --color-primary:        #047857;
+  --color-primary-hover:  #065f46;
+  --color-primary-light:  rgba(4, 120, 87, 0.10);
+  --color-primary-soft:   rgba(4, 120, 87, 0.05);
 
-  --color-bg:             #FFFFFF;
-  --color-bg-alt:         #F9FAFB;
+  --color-bg:             #F8FAFC;
+  --color-bg-alt:         #FFFFFF;
   --color-surface:        #FFFFFF;
-  --color-surface-2:      #F3F4F6;
+  --color-surface-2:      #F1F5F9;
 
-  --color-border:         #E5E7EB;
-  --color-border-strong:  #D1D5DB;
+  --color-border:         #E2E8F0;
+  --color-border-strong:  #CBD5E1;
 
-  --color-text:           #111827;
-  --color-text-muted:     #6B7280;
-  --color-text-subtle:    #9CA3AF;
+  --color-text:           #0F172A;
+  --color-text-muted:     #64748B;
+  --color-text-subtle:    #94A3B8;
 
-  --color-error:          #DC2626;
-  --color-error-light:    rgba(220, 38, 38, 0.08);
-  --color-warning:        #D97706;
-  --color-warning-light:  rgba(217, 119, 6, 0.08);
-  --color-success:        #059669;
-  --color-success-light:  rgba(5, 150, 105, 0.08);
-  --color-info:           #2563EB;
-  --color-info-light:     rgba(37, 99, 235, 0.08);
+  --color-error:          #EF4444;
+  --color-error-light:    rgba(239, 68, 68, 0.08);
+  --color-warning:        #F59E0B;
+  --color-warning-light:  rgba(245, 158, 11, 0.08);
+  --color-success:        #10B981;
+  --color-success-light:  rgba(16, 185, 129, 0.08);
+  --color-info:           #0EA5E9;
+  --color-info-light:     rgba(14, 165, 233, 0.08);
 }
 
 /* ---- Typography ------------------------------------------- */
