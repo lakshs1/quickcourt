@@ -27,13 +27,6 @@ export async function register(data: {
   password: string;
   name: string;
 }) {
-  // Domain check: must end with @s.amity.edu
-  if (!data.email.toLowerCase().endsWith("@s.amity.edu")) {
-    throw ApiError.badRequest(
-      "Only verified Amity University email addresses (@s.amity.edu) are allowed to register."
-    );
-  }
-
   // Check if email already taken
   const existing = await db
     .select()

@@ -26,10 +26,10 @@ export function setupSwagger(app: Express): void {
   const doc = generator.generateDocument({
     openapi: "3.0.0",
     info: {
-      title: "AmiConnect API v1",
+      title: "QuickCourt API v1",
       version: "1.0.0",
       description:
-        "Comprehensive REST API for AmiConnect — Amity University student networking platform. Built with Express, Drizzle ORM & Zod.",
+        "Authentication & REST API for QuickCourt. Built with Express, Drizzle ORM & Zod.",
     },
     servers: [{ url: "/api/v1" }, { url: "/api" }],
   });
